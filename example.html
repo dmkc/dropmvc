@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+    <head>
+        <style>
+            body { font: 14pt Helvetica; color: #696969; }
+            h1,h2,h3,h4 { color: #000; }
+            input{ font-size: 120%; }
+            textarea{ font-size: 90%; width: 300px; height: 100px;  }
+            #comment-preview { width: 300px; font: 13pt "Courier New", monospace;
+                border: 1px dashed #ccc; margin: 0 0 10px; }
+            #comment-preview.submitted { border: 1px solid green; }
+        </style>
+    </head>
+    <body>
+        <h1>Comments</h1> 
+        <div id="comment">
+            <div id="comment-preview"></div>
+            <form>
+                <textarea name="comment-body" style="display:block"></textarea>
+                <input type="submit" name="comment-submit" value="Comment">
+                <input type="submit" value="Erase" name="comment-erase">
+            </form>
+        </div> 
+    </body>
+</html>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript" src="dropmvc.js"></script>
+<script type="text/javascript">
+
+    // playtime! create a view based on jQuery selector
+    var cmtview = new drop.view('#comment', { 
+        submitbtn: { /* create a new control for this view */
+            selector: 'input[name=comment-submit]', /* selector for the control */
+            /* this control will also have a method */
+            disable: function(){ this.elmt().attr('disabled', true); } 
+        },
+        preview: {
+            selector: '#comment-preview',
+            contents: function(text) {
+                this.elmt().text(text);
+            },
+            mark: function() { this.elmt().addClass('submitted'); }
+        }
+    });
+    // we can also add a control after the fact
+    cmtview.addCtrl('body', { 
+        selector: 'textarea[name=comment-body]',
+        text: function(){ return this.elmt().val(); }
+    });
+    
+    // now create a new controller
+    var cmtco = new drop.co({
+        init: function() { /* controllers can have constructors */
+            // inits a new view and adds it to this namespace
+            this.view('v', cmtview);
+
+            // bind the controller methods to controls
+            this.v.submitbtn.bind('click', this.submit); 
+            this.v.body.bind('keyup', this.preview);
+        },
+        submit: function(e){
+            e.preventDefault();
+            console.log(e);
+            this.v.submitbtn.disable(); // call method on the control
+            this.v.preview.mark();
+        },
+        preview: function(e) {
+           this.v.preview.contents(this.v.body.text());
+        },
+        reset: function(){ }
+    });
+</script>
