@@ -1,4 +1,4 @@
-if(jQuery === undefined) throw 'DropJS requires jQuery';
+if(jQuery === undefined) throw 'dropjs requires jQuery';
 
 (function($){
     Util = {
