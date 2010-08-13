@@ -1,3 +1,5 @@
+if(jQuery === undefined) throw 'DropMVC requires jQuery';
+
 (function($){
     Util = {
         /** extend prototype of b with a */
