@@ -11,18 +11,18 @@ if(jQuery === undefined) throw 'DropMVC requires jQuery';
 
     // controls are buttons, checkboxes, anything that could react to actions
     function Control(elmt){ 
-    	this._elmt = false;
+        this._elmt = false;
         this._view = undefined;
-		this._selector = undefined;
-	        if(typeof elmt == 'string') {
-	            if(elmt.length == 0) throw('Can\'t accept empty selector.');
-	            this._selector = elmt;
-	        } else {
+        this._selector = undefined;
+            if(typeof elmt == 'string') {
+                if(elmt.length == 0) throw('Can\'t accept empty selector.');
+                this._selector = elmt;
+            } else {
                 $.extend(this, elmt);
-	            if(this.selector === undefined) throw('The "selector" property is required.');
-                this._selector = this.selector;
+                if(this.selector === undefined) throw('The "selector" property is required.');
+                    this._selector = this.selector;
                 delete this.selector;
-	        }
+            }
     }
 
     Control.prototype = {
@@ -41,7 +41,7 @@ if(jQuery === undefined) throw 'DropMVC requires jQuery';
     function View(container, controls){
         this._container = $(container);
         this._controller = undefined;
-		this._controls = []; // keep array of all controls as well
+        this._controls = []; // keep array of all controls as well
 
         // wrap control in jQuery object if necessary
         for(var c in controls) this.addCtrl(c, controls[c]);
@@ -84,8 +84,8 @@ if(jQuery === undefined) throw 'DropMVC requires jQuery';
             view._controller = this;
         }
     }
-	
-	// finally, announce self to the world
+    
+    // finally, announce self to the world
     window.drop = { view: View, co: Controller, ctrl: Control, u:Util };
 })(jQuery);
 
