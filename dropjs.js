@@ -1,4 +1,4 @@
-if(jQuery === undefined) throw 'DropMVC requires jQuery';
+if(jQuery === undefined) throw 'DropJS requires jQuery';
 
 (function($){
     Util = {
@@ -59,13 +59,20 @@ if(jQuery === undefined) throw 'DropMVC requires jQuery';
             var c = 0;
             while(this._controls[c].c != control) c++; // aa-haha
                 this._controls[c].h = handler;
-            this._container.bind(eventType, $.proxy( this._eventHandler, this) );
+            // only bind if we're not already
+            var events = this._container.data().events;
+            if(typeof events == 'undefined' || typeof events[eventType] == 'undefined')
+                this._container.bind(eventType, $.proxy( this._eventHandler, this ) );
         },
         _eventHandler: function(e){
             var c;
             for(var i=0; i < this._controls.length; i++) 
-                if (this._controls[i].c._elmt.get(0) == e.target)
+                // call the handler if one is assigned for this control
+                if (this._controls[i].c._elmt.get(0) == e.target
+                    && typeof this._controls[i].h != 'undefined') {
                     this._controls[i].h.call(this._controller, e); 
+                    e.preventDefault();
+                }
         }
     }
 
@@ -88,4 +95,5 @@ if(jQuery === undefined) throw 'DropMVC requires jQuery';
     // finally, announce self to the world
     window.drop = { view: View, co: Controller, ctrl: Control, u:Util };
 })(jQuery);
+
 
