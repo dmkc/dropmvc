@@ -1,4 +1,12 @@
 (function($){
+    Util = {
+        /** extend prototype of b with a */
+        ext: function(a, b) {
+            b.prototype = $.extend(b.prototype, new a);
+            b.prototype.constructor = b;
+        }
+    }
+
     // controls are buttons, checkboxes, anything that could react to actions
     function Control(elmt){ 
     	this._elmt = false;
@@ -76,6 +84,6 @@
     }
 	
 	// finally, announce self to the world
-    window.drop = { view: View, co: Controller, ctrl: Control };
+    window.drop = { view: View, co: Controller, ctrl: Control, u:Util };
 })(jQuery);
 
