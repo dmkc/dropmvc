@@ -70,6 +70,8 @@ if(jQuery === undefined) throw 'dropjs requires jQuery';
                 // call the handler if one is assigned for this control
                 if (this._controls[i].c._elmt.get(0) == e.target
                     && typeof this._controls[i].h != 'undefined') {
+                    // add control event was triggered on to the event obj
+                    e.targetControl = this._controls[i].c;
                     this._controls[i].h.call(this._controller, e); 
                     e.preventDefault();
                 }
