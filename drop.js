@@ -83,7 +83,10 @@ if(jQuery === undefined) throw 'dropjs requires jQuery';
         this._views = {}; 
         $.extend(this, o); 
         var init = (o.init || o._init);
+        var bindings = (o.bindings || o._bindings);
+        // run the initializer and add bindings if present
         if(init !== undefined) init.apply(this);
+        if(bindings !== undefined) bindings.apply(this);
     }
 
     Controller.prototype = {
