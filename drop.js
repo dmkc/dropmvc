@@ -1,24 +1,24 @@
-if(jQuery === undefined) throw 'dropjs requires jQuery';
+if(jQuery === undefined) throw 'dropmvc requires jQuery';
 
 (function($){
-    // primary object everything else derives from
+    // The primary object everything else derives from
     function DropObject() { }
     // Simplified inheritance. Merge given object into a prototype of a 
     // new function and return the result that can be used with the 'new' 
     // keyword
     DropObject.breed = function(o) {
         var newobj = function(){ 
+            // supply an init() or _init() method, and it'll get called
+            // on new object creation
             ( this.init || this._init ).apply( this, arguments );
         };
-        // extend own prototype with provided object
         newobj.prototype = $.extend( o, this.prototype );
         newobj.breed = this.breed;
         return newobj;
     }
 
     // Controls are buttons, checkboxes, anything that could emit events.
-    // They are a basic unit of presentation, and are grouped together under
-    // a View.
+    // They are a basic unit of UI, and are grouped together with a View.
     var Control = DropObject.breed({
         _init: function(elmt) {
             this._elmt = false;
@@ -67,33 +67,36 @@ if(jQuery === undefined) throw 'dropjs requires jQuery';
         control: function(name,control) {
             if(this[name] !== undefined) throw(name+" is already defined.");
                 this[name] = (control instanceof Control) ? control : new Control(control);
-            this._controls.push({c: this[name]});
+            this._controls.push({control: this[name]});
             this[name]._view = this;
             this[name]._initSelector(this._container);
         },
         // Bind a handler (most often a controller method) to a given control
-        // and event type
+        // and event type.
         bind: function(control, eventType, handler) {
             var c = 0;
-            while(this._controls[c].c != control) c++; // aa-haha
-                this._controls[c].h = handler;
+            while(this._controls[c].control != control) {
+                if(c > this._controls.length) throw 'No such control in this view.';
+                c++; // aa-haha
+            }
+            this._controls[c].handler = handler;
             // only bind if we're not already
             var events = this._container.data().events;
             if(typeof events == 'undefined' || typeof events[eventType] == 'undefined')
                 this._container.bind(eventType, $.proxy( this._eventHandler, this ) );
         },
         // Handle DOM events from controls and redirect them to the appropriate
-        // controller methods
+        // controller methods.
         _eventHandler: function(e){
-            var c;
             for(var i=0; i < this._controls.length; i++) 
                 // call the handler if one is assigned for this control
-                if (this._controls[i].c._elmt.get(0) == e.target
-                    && typeof this._controls[i].h != 'undefined') {
-                    // add control event was triggered on to the event obj
-                    e.targetControl = this._controls[i].c;
-                    this._controls[i].h.call(this._controller, e); 
+                if (this._controls[i].control._elmt.get(0) == e.target
+                    && typeof this._controls[i].handler != 'undefined') {
+                    // easy access to the control the event was triggered on
+                    e.targetControl = this._controls[i].control;
+                    this._controls[i].handler.call(this._controller, e); 
                     e.preventDefault();
+                    return false;
                 }
         }
     });
