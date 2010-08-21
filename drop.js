@@ -1,19 +1,27 @@
 if(jQuery === undefined) throw 'dropjs requires jQuery';
 
 (function($){
-    Util = {
-        /** extend prototype of b with a */
-        ext: function(a, b) {
-            b.prototype = $.extend(b.prototype, new a);
-            b.prototype.constructor = b;
-        }
+    // primary object everything else derives from
+    function DropObject() { }
+    // merges given object into a prototype of a new
+    // function and returns the result that can be used
+    // with the 'new' keyword
+    DropObject.breed = function(o) {
+        var newobj = function(){ 
+            ( this.init || this._init ).apply( this, arguments );
+        };
+        // extend own prototype with provided object
+        newobj.prototype = $.extend( o, this.prototype );
+        newobj.breed = this.breed;
+        return newobj;
     }
 
     // controls are buttons, checkboxes, anything that could react to actions
-    function Control(elmt){ 
-        this._elmt = false;
-        this._view = undefined;
-        this._selector = undefined;
+    var Control = DropObject.breed({
+        init: function(elmt) {
+            this._elmt = false;
+            this._view = undefined;
+            this._selector = undefined;
             if(typeof elmt == 'string') {
                 if(elmt.length == 0) throw('Can\'t accept empty selector.');
                 this._selector = elmt;
@@ -23,9 +31,7 @@ if(jQuery === undefined) throw 'dropjs requires jQuery';
                     this._selector = this.selector;
                 delete this.selector;
             }
-    }
-
-    Control.prototype = {
+        },
         // initialize the jQuery selector within scope of context to speed things up.
         _initSelector: function(context){ 
             this._elmt = $(this._selector, context);
@@ -36,19 +42,18 @@ if(jQuery === undefined) throw 'dropjs requires jQuery';
         },
         elmt: function(){ return this._elmt; }
 
-    }
+    });
 
-    function View(container, controls){
-        this._container = $(container);
-        this._controller = undefined;
-        this._controls = []; // keep array of all controls as well
+    var View = DropObject.breed({
+        init: function(container, controls) {
+            this._container = $(container);
+            this._controller = undefined;
+            this._controls = []; // keep array of all controls as well
 
-        // wrap control in jQuery object if necessary
-        for(var c in controls) this.addCtrl(c, controls[c]);
-    }
-
-    View.prototype = {
-        addCtrl: function(name,control) {
+            // wrap control in jQuery object if necessary
+            for(var c in controls) this.addControl(c, controls[c]);
+        },
+        addControl: function(name,control) {
             if(this[name] !== undefined) throw(name+" is already defined.");
                 this[name] = (control instanceof Control) ? control : new Control(control);
             this._controls.push({c: this[name]});
@@ -76,29 +81,30 @@ if(jQuery === undefined) throw 'dropjs requires jQuery';
                     e.preventDefault();
                 }
         }
-    }
+    });
+
 
     // controllers react to events and do stuff to views
-    function Controller(o){ 
-        this._views = {}; 
-        $.extend(this, o); 
-        var init = (o.init || o._init);
-        var bindings = (o.bindings || o._bindings);
-        // run the initializer and add bindings if present
-        if(init !== undefined) init.apply(this);
-        if(bindings !== undefined) bindings.apply(this);
-    }
+    var Controller = DropObject.breed({ 
+        init: function(o){
+            this._views = {}; 
+            $.extend(this, o); 
+            var init = (o.init || o._init);
+            var bindings = (o.bindings || o._bindings);
+            // run the initializer and add bindings if present
+            if(init !== undefined) init.apply(this);
+            if(bindings !== undefined) bindings.apply(this);
+        },
 
-    Controller.prototype = {
         // add a view to the controller
         view: function(name, view) {
             this[name] = this._views[name] = view;
             view._controller = this;
         }
-    }
+    });
     
     // finally, announce self to the world
-    window.drop = { view: View, co: Controller, ctrl: Control, u:Util };
+    window.drop = { view: View, co: Controller, ctrl: Control, obj: DropObject};
 })(jQuery);
 
 
