@@ -28,24 +28,27 @@
 <script type="text/javascript">
 
     // playtime! create a view based on jQuery selector
+    // We provide a jQuery selector which will define the view's primary
+    // container. As the optional second argument we also provide an 
+    // object with some controls.
     var cmtview = new drop.view('#comment', { 
-        submitbtn: { /* create a new control for this view */
+        submitbtn: { // this will create a new control for this view
             selector: 'input[name=comment-submit]', /* selector for the control */
             /* this control will also have a method */
-            disable: function(){ this.elmt().attr('disabled', true); } 
+            disable: function(){ this._elmt.attr('disabled', true); } 
         },
         preview: {
             selector: '#comment-preview',
             contents: function(text) {
-                this.elmt().text(text);
+                this._elmt.text(text);
             },
-            mark: function() { this.elmt().addClass('submitted'); }
+            mark: function() { this._elmt.addClass('submitted'); }
         }
     });
     // we can also add a control after the fact
-    cmtview.addCtrl('body', { 
+    cmtview.control('body', { 
         selector: 'textarea[name=comment-body]',
-        text: function(){ return this.elmt().val(); }
+        text: function(){ return this._elmt.val(); }
     });
     
     // now create a new controller
