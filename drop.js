@@ -20,17 +20,21 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
     // Controls are buttons, checkboxes, anything that could emit events.
     // They are a basic unit of UI, and are grouped together with a View.
     var Control = DropObject.breed({
-        _init: function(elmt) {
+        _init: function( elmt ) {
             this._elmt = false;
             this._view = undefined;
             this._selector = undefined;
+            // if elmt is a string, make sure it isn't empty
             if(typeof elmt == 'string') {
-                if(elmt.length == 0) throw('Can\'t accept empty selector.');
+                if( elmt.length == 0 ) throw 'Can\'t accept empty selector.';
+                // stash the selector away for later
                 this._selector = elmt;
+            // else it's an object to build this control from
             } else {
-                $.extend(this, elmt);
-                if(this.selector === undefined) throw('The "selector" property is required.');
-                    this._selector = this.selector;
+                $.extend( this, elmt );
+                if(this.selector === undefined) 
+                    throw('The "selector" property is required.');
+                this._selector = this.selector;
                 delete this.selector;
             }
         },
