@@ -26,15 +26,14 @@
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
 <script type="text/javascript" src="drop.js"></script>
 <script type="text/javascript">
-
     // playtime! create a view based on jQuery selector
     // We provide a jQuery selector which will define the view's primary
     // container. As the optional second argument we also provide an 
     // object with some controls.
-    var cmtview = new drop.view('#comment', { 
+    var cmtview = drop.view().init('#comment', { 
         submitbtn: { // this will create a new control for this view
-            selector: 'input[name=comment-submit]', /* selector for the control */
-            /* this control will also have a method */
+            selector: 'input[name=comment-submit]', // selector for the control
+            // this control will also have a method 
             disable: function(){ this._elmt.attr('disabled', true); } 
         },
         preview: {
@@ -52,23 +51,23 @@
     });
     
     // now create a new controller
-    var cmtco = new drop.co({
-        init: function() { /* controllers can have constructors */
+    var cmtco = drop.co().init({
+        init: function() { // controllers can have constructors
             // inits a new view and adds it to this namespace
-            this.view('v', cmtview);
+            this.addView('view', cmtview);
 
             // bind the controller methods to controls
-            this.v.submitbtn.bind('click', this.submit); 
-            this.v.body.bind('keyup', this.preview);
+            this.view.submitbtn.bind('click', this.submit); 
+            this.view.body.bind('keyup', this.preview);
         },
         submit: function(e){
             e.preventDefault();
             console.log(e);
-            this.v.submitbtn.disable(); // call method on the control
-            this.v.preview.mark();
+            this.view.submitbtn.disable(); // call method on the control
+            this.view.preview.mark();
         },
         preview: function(e) {
-           this.v.preview.contents(this.v.body.text());
+           this.view.preview.contents(this.view.body.text());
         },
         reset: function(){ }
     });

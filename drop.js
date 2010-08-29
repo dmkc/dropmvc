@@ -1,30 +1,34 @@
 if(jQuery === undefined) throw 'dropmvc requires jQuery';
 
 (function($){
+    // Standard in JavaScript 1.8.5, and introduced by Doug Crockford
+    if (typeof Object.create !== 'function') {
+         Object.create = function (o){
+             var func = function (){};
+             func.prototype = o;
+             return new F();
+         };
+    }
     // The primary object everything else derives from
-    function DropObject() { }
-    // Simplified inheritance. Merge given object into a prototype of a 
-    // new function and return the result that can be used with the 'new' 
-    // keyword
-    DropObject.breed = function(o) {
-        var newobj = function(){ 
-            // supply an init() or _init() method, and it'll get called
-            // on new object creation
-            ( this.init || this._init ).apply( this, arguments );
+    function DropObject(){ }
+    // Simplified prototypal inheritance
+    DropObject.breed = function(obj) {
+        var Newobj = function() {
+            return Object.create(obj);
         };
-        newobj.prototype = $.extend( o, this.prototype );
-        newobj.breed = this.breed;
-        return newobj;
+        // clone all non-prototyped properties and methods, including breed
+        for(var p in this)
+            if(p != 'prototype') Newobj[p] = this[p];
+        return Newobj;
     }
 
     // Controls are buttons, checkboxes, anything that could emit events.
     // They are a basic unit of UI, and are grouped together with a View.
     var Control = DropObject.breed({
-        _init: function( elmt ) {
+        init: function(elmt) {
             this._elmt = false;
             this._view = undefined;
             this._selector = undefined;
-            // if elmt is a string, make sure it isn't empty
             if(typeof elmt == 'string') {
                 if( elmt.length == 0 ) throw 'Can\'t accept empty selector.';
                 // stash the selector away for later
@@ -37,6 +41,7 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
                 this._selector = this.selector;
                 delete this.selector;
             }
+            return this;
         },
         // Initialize the jQuery selector within scope of context. Run upon
         // assigning this controler to a view to speed things up.
@@ -57,7 +62,7 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
     var View = DropObject.breed({
         // View's contructor takes in a jQuery selector and an optional object
         // filled with controls to assign to this view
-        _init: function(selector) {
+        init: function(selector) {
             var controls = arguments[1];
             this._container = $(selector);
             this._controller = undefined;
@@ -65,12 +70,14 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
 
             // wrap control in jQuery object if necessary
             for(var c in controls) this.control(c, controls[c]);
+            
+            return this;
         },
         // Add a Control object to this view. Takes in a name of the
         // control and an object filled out with methods for this control.
         control: function(name,control) {
             if(this[name] !== undefined) throw(name+" is already defined.");
-                this[name] = (control instanceof Control) ? control : new Control(control);
+                this[name] = (control instanceof Control) ? control : Control().init(control);
             this._controls.push({control: this[name]});
             this[name]._view = this;
             this[name]._initSelector(this._container);
@@ -109,7 +116,7 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
     // Controllers connect views, controls and models together. E.g. a control 
     // is typically assigned to a controller method.
     var Controller = DropObject.breed({ 
-        _init: function(o){
+        init: function(o){
             this._views = {}; 
             $.extend(this, o); 
             var init = (o.init || o._init);
@@ -117,10 +124,12 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
             // run the initializer and add bindings if present
             if(init !== undefined) init.apply(this);
             if(bindings !== undefined) bindings.apply(this);
+
+            return this;
         },
 
         // add a view to the controller
-        view: function(name, view) {
+        addView: function(name, view) {
             this[name] = this._views[name] = view;
             view._controller = this;
         }
