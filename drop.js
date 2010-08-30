@@ -6,21 +6,23 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
          Object.create = function (o){
              var func = function (){};
              func.prototype = o;
-             return new F();
+             return new func();
          };
     }
     // The primary object everything else derives from
     function DropObject(){ }
     // Simplified prototypal inheritance
     DropObject.breed = function(obj) {
-        var Newobj = function() {
-            return Object.create(obj);
-        };
+        var self = this,
+            Newobj = function() {
+                // merge in the prototype and the given methods
+                return Object.create( $.extend({}, self(), obj) );
+            };
         // clone all non-prototyped properties and methods, including breed
         for(var p in this)
             if(p != 'prototype') Newobj[p] = this[p];
         return Newobj;
-    }
+    };
 
     // Controls are buttons, checkboxes, anything that could emit events.
     // They are a basic unit of UI, and are grouped together with a View.
@@ -138,5 +140,4 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
     // finally, announce self to the world
     window.drop = { view: View, co: Controller, ctrl: Control, obj: DropObject};
 })(jQuery);
-
 
