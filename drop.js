@@ -16,7 +16,12 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
         var self = this,
             Newobj = function() {
                 // merge in the prototype and the given methods
-                return Object.create( $.extend({}, self(), obj) );
+                var superior = self(),
+                    o = Object.create( $.extend({}, superior, obj) );
+                o.superior = {};
+                for(var p in superior)
+                    o.superior[p] = $.proxy( superior[p], o );
+                return o;
             };
         // clone all non-prototyped properties and methods, including breed
         for(var p in this)
@@ -54,6 +59,8 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
         // Bind this control to a given function. The function is always 
         // run in the context of the Controller this controler belongs to.
         bind: function(eventType, handler){
+            if(!eventType || !handler) 
+                throw 'Both eventType and handler are required to bind controls';
             this._view.bind(this, eventType, handler);
         }
     });
@@ -66,7 +73,7 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
         // filled with controls to assign to this view
         init: function(selector) {
             var controls = arguments[1];
-            this._container = $(selector);
+            this._elmt = $(selector);
             this._controller = undefined;
             this._controls = []; // keep array of all controls as well
 
@@ -82,7 +89,7 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
                 this[name] = (control instanceof Control) ? control : Control().init(control);
             this._controls.push({control: this[name]});
             this[name]._view = this;
-            this[name]._initSelector(this._container);
+            this[name]._initSelector(this._elmt);
         },
         // Bind a handler (most often a controller method) to a given control
         // and event type.
@@ -94,9 +101,9 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
             }
             this._controls[c].handler = handler;
             // only bind if we're not already
-            var events = this._container.data().events;
+            var events = this._elmt.data().events;
             if(typeof events == 'undefined' || typeof events[eventType] == 'undefined')
-                this._container.bind(eventType, $.proxy( this._eventHandler, this ) );
+                this._elmt.bind(eventType, $.proxy( this._eventHandler, this ) );
         },
         // Handle DOM events from controls and redirect them to the appropriate
         // controller methods.
@@ -120,11 +127,8 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
     var Controller = DropObject.breed({ 
         init: function(o){
             this._views = {}; 
-            $.extend(this, o); 
-            var init = (o.init || o._init);
-            var bindings = (o.bindings || o._bindings);
+            if(o) var bindings = (o.bindings || o._bindings);
             // run the initializer and add bindings if present
-            if(init !== undefined) init.apply(this);
             if(bindings !== undefined) bindings.apply(this);
 
             return this;
