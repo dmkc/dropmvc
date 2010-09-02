@@ -11,7 +11,7 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
     }
     // The primary object everything else derives from
     function DropObject(){ }
-    // Simplified prototypal inheritance. Returns a function that will return
+    // Simplified prototypal inheritance. Return a function that will return
     // instances of objects with a prototype set to 'obj'.
     DropObject.breed = function(obj) {
         var self = this,
@@ -24,14 +24,14 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
                     o.superior[p] = $.proxy( superior[p], o );
                 return o;
             };
-        // clone all non-prototyped properties and methods, including breed
+        // copy all non-prototyped properties and methods, including breed
         for(var p in this)
             if(p != 'prototype') Newobj[p] = this[p];
         return Newobj;
     };
 
     // Controls are buttons, checkboxes, anything that could emit events.
-    // They are a basic unit of UI, and are grouped together under a View.
+    // They are a basic unit of UI, and are grouped together under a view.
     var Control = DropObject.breed({
         init: function(elmt) {
             this._elmt = false;
@@ -41,6 +41,7 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
                 this.elmt( elmt );
             return this;
         },
+
         // Initialize the jQuery selector within scope of context. Called
         // when this control is assigned to a view, which will speed up 
         // the jQuery selector.
@@ -48,6 +49,7 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
             this._elmt = $(this._selector, context);
             delete this._selector;
         },
+
         // Set the primary DOM element for this control. Accepts either a jQuery
         // selector, a DOM element or a jQuery object.
         elmt: function( elmt ) {
@@ -65,6 +67,7 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
                 delete this.selector;
             }
         },
+
         // Bind a method to this control. The handler always executes within 
         // the context of the controller object that the view of this control
         // belongs to.
@@ -75,15 +78,14 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
         }
     });
 
-    // Views are a generic 'container' that contains controls. Its primary task
-    // is to listen for all bubbling events, and call controller methods when
-    // an event originatet from one of the controls within this view. It can
+    // Views are a generic 'container' for controls. Its primary task is to 
+    // listen for all registered bubbling events, and call controller methods when
+    // an event originates from one of the controls within this view. It can
     // obviously have other methods that work with the view as a whole, though.
     var View = DropObject.breed({
         // View's contructor takes in a jQuery selector of the main DOM element
         // for this view and an optional object filled with controls
-        init: function(selector) {
-            var controls = arguments[1];
+        init: function(selector, controls) {
             if(selector)
                 this.elmt( selector );
             this._controller = undefined;
@@ -147,25 +149,25 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
         }
     });
 
-    // Controllers connect views, controls and models together, and represents
+    // Controllers connect views, controls and models together, and represent
     // the main 'business logic' of the given chunk of code.
     var Controller = DropObject.breed({ 
-        init: function(o){
+        init: function(){
             this._views = {}; 
-            // run the initializer and add event bindings if present
+            // convenient auto-binding, if such a method is present.
             if(this.bindings !== undefined) this.bindings();
 
             return this;
         },
 
-        // Register a drop.view view object for this controller.
+        // Register a drop.view view object with this controller.
         addView: function(name, view) {
             this[name] = this._views[name] = view;
             view._controller = this;
         }
     });
     
-    // finally, announce self to the world
+    // Hello, world!
     window.drop = { view: View, co: Controller, ctrl: Control, obj: DropObject};
 })(jQuery);
 
