@@ -36,6 +36,20 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
             this._elmt = false;
             this._view = undefined;
             this._selector = undefined;
+            if(elmt)
+                this.elmt( elmt );
+            return this;
+        },
+        // Initialize the jQuery selector within scope of context. Run upon
+        // assigning this controler to a view to speed things up.
+        _initSelector: function(context){ 
+            this._elmt = $(this._selector, context);
+            delete this._selector;
+        },
+        // Set the DOM element for this control. Accepts either a jQuery
+        // selector, a DOM element or a jQuery object.
+        elmt: function( elmt ) {
+            if(!elmt) return this._elmt;
             if(typeof elmt == 'string') {
                 if( elmt.length == 0 ) throw 'Can\'t accept empty selector.';
                 // stash the selector away for later
@@ -48,13 +62,6 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
                 this._selector = this.selector;
                 delete this.selector;
             }
-            return this;
-        },
-        // Initialize the jQuery selector within scope of context. Run upon
-        // assigning this controler to a view to speed things up.
-        _initSelector: function(context){ 
-            this._elmt = $(this._selector, context);
-            delete this._selector;
         },
         // Bind this control to a given function. The function is always 
         // run in the context of the Controller this controler belongs to.
@@ -73,14 +80,28 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
         // filled with controls to assign to this view
         init: function(selector) {
             var controls = arguments[1];
-            this._elmt = $(selector);
+            if(selector)
+                this.elmt( selector );
             this._controller = undefined;
             this._controls = []; // keep array of all controls as well
-
-            // wrap control in jQuery object if necessary
-            for(var c in controls) this.control(c, controls[c]);
+            if( controls )
+                this.controls( controls );
             
             return this;
+        },
+        // Set the internal container element for this view. This element
+        // will be listening for events emitting from view controls.
+        elmt: function( elmt ) {
+            if(!elmt) return this._elmt;
+            this._elmt = $( elmt );
+        },
+        // Add a number of controls to this view at once. Takes in
+        // an object filled with controls and executes this.control()
+        // on each one of them.
+        controls: function( controls ) {
+            if(!controls) return this._controls;
+            // wrap control in jQuery object if necessary
+            for(var c in controls) this.control(c, controls[c]);
         },
         // Add a Control object to this view. Takes in a name of the
         // control and an object filled out with methods for this control.
