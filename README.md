@@ -1,5 +1,4 @@
 #dropmvc
-
 ## Quick How To
 A miniature Javascript framework for adding MVC-like flow to bits of a webpage. On a bright sunny day you: 
 
