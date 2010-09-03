@@ -101,6 +101,10 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
             if(!elmt) return this._elmt;
             this._elmt = $( elmt );
         },
+        controller: function( ctrl ) {
+            if(!ctrl) return this._controller;
+            this._controller = $( ctrl );
+        },
         // Add a number of controls to this view at once. Takes in
         // an object filled with controls and executes this.control()
         // on each one of them.
@@ -155,7 +159,7 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
         init: function(){
             this._views = {}; 
             // convenient auto-binding, if such a method is present.
-            if(this.bindings !== undefined) this.bindings();
+            //if(this.bindings !== undefined) this.bindings();
 
             return this;
         },
