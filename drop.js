@@ -133,9 +133,10 @@ if(jQuery === undefined) throw 'dropmvc requires jQuery';
             }
             this._controls[c].handler = handler;
             // only bind if we're not already
-            var events = this._elmt.data().events;
-            if(typeof events == 'undefined' || typeof events[eventType] == 'undefined')
-                this._elmt.bind(eventType, $.proxy( this._eventHandler, this ) );
+            var events = this._elmt.data('events');
+            if(typeof events === null || events !== 'null' || 
+			   typeof events !== null && events[eventType] === undefined)
+            		this._elmt.bind(eventType, $.proxy( this._eventHandler, this ) );
         },
         // Main view event handler. Listens for all events, and calls controller
         // methods if an event originated from one of this view's controls.
